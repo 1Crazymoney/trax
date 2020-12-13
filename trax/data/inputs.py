@@ -1209,7 +1209,7 @@ def random_number_lower_endian(length, base):
 def addition_inputs(
     vocab_size=gin.REQUIRED, batch_size=gin.REQUIRED, train_length=gin.REQUIRED,
     eval_min_length=gin.REQUIRED, eval_max_length=gin.REQUIRED,
-    pad_to_multiple=32, encdec=False):
+    pad_to_multiple=32, encdec=False, only_eval_stream=False):
   """Inputs for the add problem: <S>x+y<S>(x+y).
 
   Args:
@@ -1220,6 +1220,8 @@ def addition_inputs(
     eval_max_length: maximal length of w for eval.
     pad_to_multiple: int, pad length to be multiple of this number.
     encdec: bool, if True return encoder-decoder style inputs (default: False)
+    only_eval_stream: bool, if True return only eval_stream usable by EvalTask
+        (default: False)
 
   Returns:
     trax.inputs.Inputs
@@ -1261,10 +1263,13 @@ def addition_inputs(
                       for x in zip(*ex)]
       yield tuple(padded_batch)
 
-  return Inputs(
-      train_stream=lambda _: batches(train_length, 3),
-      eval_stream=lambda _: batches(eval_max_length, eval_min_length)
-  )
+  if only_eval_stream:
+    return batches(eval_max_length, eval_min_length)
+  else:
+    return Inputs(
+        train_stream=lambda _: batches(train_length, 3),
+        eval_stream=lambda _: batches(eval_max_length, eval_min_length)
+    )
 
 
 # This is a straightforward translation of T5's random_spans_noise_mask.

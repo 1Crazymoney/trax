@@ -604,6 +604,12 @@ def train(output_dir,
                                   metrics,
                                   metric_names=names,
                                   n_eval_batches=eval_steps)
+    if additional_eval_tasks:
+      for additional_eval_task in additional_eval_tasks:
+        # Use default metrics if not specified.
+        if not additional_eval_task.metrics:
+          additional_eval_task.metrics = metrics
+          additional_eval_task.metric_names = names
 
     # Prepare the training loop.
     checkpoint_at = None
